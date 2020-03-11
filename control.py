@@ -99,7 +99,7 @@ class Control(object):
             data = command.recv(2048).decode()
             try:
                 jdata = json.loads(data.replace("'", '"'))
-                query = jdata['query']
+                query = jdata['method']
                 execute = True
             except:
                 self.log.error("cannot understand control command: %s" % data)
