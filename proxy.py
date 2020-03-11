@@ -3,7 +3,10 @@ import time
 import log
 import select
 import socket
-import queue
+try:
+   import queue
+except ImportError:
+   import Queue as queue
 import manager
 import connection
 
