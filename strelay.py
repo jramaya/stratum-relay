@@ -11,13 +11,11 @@ import proxy as Proxy
 import threading
 import log as Log
 import share_stats
-import control
 import argparse
 
 
 def signal_handler(signal, frame):
     shutdown = True
-    controller.shutdown = True
     log.info('exit')
     if pool:
         pool.shutdown(0)
@@ -117,18 +115,6 @@ t = threading.Thread(target=proxies.cleaner, args=[])
 t.daemon = True
 t.start()
 
-# Set and start control thread
-controller = control.Control(proxydb=proxies, sharestats=shares)
-controller.listen_ip = args.control
-controller.listen_port = args.control_port
-controller.poolmap['pool'] = args.pool
-controller.poolmap['port'] = args.port
-controller.poolmap['user'] = args.username
-controller.poolmap['pass'] = args.password
-t = threading.Thread(target=controller.start, args=[])
-t.daemon = True
-t.start()
-
 # Start listening for incoming connections
 server_listen = connection.Server(args.listen, args.listen_port)
 
@@ -137,10 +123,10 @@ while not shutdown:
     # Wait for client connection
     miner = server_listen.listen()
     pool_connection = connection.Client(
-        controller.poolmap['pool'], controller.poolmap['port'])
+        args.pool, args.port)
     pool = pool_connection.connect()
     proxy = Proxy.Proxy(pool, sharestats=shares)
-    proxy.set_auth(controller.poolmap['user'], controller.poolmap['pass'])
+    #proxy.set_auth(controller.poolmap['user'], controller.poolmap['pass'])
     proxy.add_miner(miner)
     t = threading.Thread(target=proxy.start, args=[])
     t.daemon = True
